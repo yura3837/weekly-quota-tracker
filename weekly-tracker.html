@@ -133,7 +133,7 @@
       margin-bottom: 18px;
     }
 
-    .reward-board {
+    .avatar-board {
       display: grid;
       gap: 12px;
       padding: 16px;
@@ -204,6 +204,14 @@
       background: linear-gradient(90deg, #2d66a3, #f1c75b);
     }
 
+    .record-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .record-card,
     .book-planner {
       display: grid;
       gap: 14px;
@@ -215,21 +223,16 @@
       margin-bottom: 18px;
     }
 
-    .anime-planner {
-      display: grid;
-      gap: 14px;
-      padding: 16px;
-      border: 1px solid var(--line);
-      background: var(--panel);
-      border-radius: 8px;
-      box-shadow: 0 10px 30px rgba(31, 38, 29, 0.07);
-      margin-bottom: 18px;
+    .record-card {
+      margin-bottom: 0;
     }
 
+    .record-card h2,
     .anime-planner h2 {
       margin-bottom: 2px;
     }
 
+    .record-card p,
     .anime-planner p {
       margin: 0;
       color: var(--muted);
@@ -237,10 +240,22 @@
       line-height: 1.6;
     }
 
+    .record-fields,
     .anime-fields {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) 92px 80px 80px;
       gap: 8px;
+    }
+
+    .record-fields.two {
+      grid-template-columns: minmax(0, 1fr) 86px;
+    }
+
+    .record-fields.three {
+      grid-template-columns: minmax(0, 1fr) 84px 76px;
+    }
+
+    .record-fields.four {
+      grid-template-columns: minmax(0, 1fr) 78px 72px 72px;
     }
 
     .secondary {
@@ -279,12 +294,14 @@
       line-height: 1.4;
     }
 
+    .entry-list,
     .episode-list {
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
     }
 
+    .entry-chip,
     .episode-chip {
       display: inline-flex;
       align-items: center;
@@ -298,6 +315,7 @@
       font-weight: 800;
     }
 
+    .entry-chip button,
     .episode-chip button {
       width: 24px;
       height: 24px;
@@ -365,103 +383,6 @@
       padding: 9px 6px;
       text-align: center;
       font-weight: 800;
-    }
-
-    .reward-top {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      gap: 12px;
-      align-items: center;
-    }
-
-    .reward-top h2 {
-      margin-bottom: 3px;
-    }
-
-    .reward-top p {
-      margin: 0;
-      color: var(--muted);
-      line-height: 1.6;
-      font-size: 13px;
-    }
-
-    .reward-token {
-      min-width: 74px;
-      padding: 10px;
-      border-radius: 8px;
-      text-align: center;
-      background: var(--yellow);
-      color: #3a2b05;
-      font-weight: 800;
-    }
-
-    .reward-list {
-      display: grid;
-      gap: 8px;
-    }
-
-    .reward-item {
-      display: grid;
-      grid-template-columns: 34px minmax(0, 1fr) auto;
-      gap: 10px;
-      align-items: center;
-      padding: 10px;
-      border: 1px solid #ead9a5;
-      border-radius: 8px;
-      background: #fffaf0;
-    }
-
-    .reward-item.locked {
-      opacity: 0.58;
-      background: #fbfcfa;
-      border-color: var(--line);
-    }
-
-    .reward-mark {
-      width: 34px;
-      height: 34px;
-      display: grid;
-      place-items: center;
-      border-radius: 8px;
-      background: #f5e5ad;
-      color: #6c4d00;
-      font-weight: 900;
-    }
-
-    .reward-copy {
-      min-width: 0;
-    }
-
-    .reward-copy strong {
-      display: block;
-      line-height: 1.35;
-      overflow-wrap: anywhere;
-    }
-
-    .reward-copy span {
-      display: block;
-      margin-top: 2px;
-      color: var(--muted);
-      font-size: 12px;
-      line-height: 1.5;
-      overflow-wrap: anywhere;
-    }
-
-    .claim {
-      min-width: 72px;
-      height: 34px;
-      padding: 0 10px;
-      border-radius: 8px;
-      background: var(--ink);
-      color: white;
-      font-size: 12px;
-      font-weight: 800;
-    }
-
-    .claim:disabled {
-      background: #e5e8e1;
-      color: var(--muted);
-      cursor: default;
     }
 
     .score {
@@ -889,7 +810,8 @@
     @media (max-width: 900px) {
       header,
       .layout,
-      .overview {
+      .overview,
+      .record-grid {
         grid-template-columns: 1fr;
       }
 
@@ -951,8 +873,6 @@
         font-size: 22px;
       }
 
-      .reward-top,
-      .reward-item,
       .avatar-panel {
         grid-template-columns: 1fr;
       }
@@ -963,20 +883,15 @@
 
       .book-fields,
       .book-stats,
-      .anime-fields {
+      .anime-fields,
+      .record-fields.two,
+      .record-fields.three,
+      .record-fields.four {
         grid-template-columns: 1fr;
       }
 
       .book-days {
         grid-template-columns: repeat(4, minmax(0, 1fr));
-      }
-
-      .reward-token {
-        justify-self: start;
-      }
-
-      .claim {
-        width: 100%;
       }
 
       .task-card {
@@ -1040,7 +955,7 @@
           </div>
         </section>
 
-        <section class="reward-board" aria-label="今週のリワード">
+        <section class="avatar-board" aria-label="アバター育成">
           <div class="avatar-panel">
             <div class="avatar-frame" id="avatarFrame"></div>
             <div class="avatar-copy">
@@ -1049,57 +964,81 @@
               <div class="avatar-meter"><i id="avatarMeter" style="--value: 0"></i></div>
             </div>
           </div>
-          <div class="reward-top">
+        </section>
+
+        <section class="record-grid" aria-label="作品記録">
+          <article class="record-card" aria-label="本">
             <div>
-              <h2>リワード</h2>
-              <p id="rewardLead"></p>
+              <h2>本</h2>
+              <p>読む本を決めて、日ごとにページ数を足します。</p>
             </div>
-            <div class="reward-token" id="rewardToken">0枚</div>
-          </div>
-          <div class="reward-list" id="rewardList"></div>
-        </section>
+            <div class="record-fields three">
+              <input id="bookTitle" type="text" placeholder="本のタイトル">
+              <input id="bookPages" type="number" min="1" step="1" placeholder="総p">
+              <button class="secondary" id="searchBooks" type="button">検索</button>
+            </div>
+            <div class="search-results" id="bookResults"></div>
+            <div class="book-stats">
+              <div class="book-stat">
+                <strong id="dailyTarget">0p</strong>
+                <p>1日あたり</p>
+              </div>
+              <div class="book-stat">
+                <strong id="pagesRead">0p</strong>
+                <p>読んだページ</p>
+              </div>
+              <div class="book-stat">
+                <strong id="pagesLeft">0p</strong>
+                <p>残り</p>
+              </div>
+            </div>
+            <div>
+              <p>読書記録</p>
+              <div class="record-fields three">
+                <select id="bookDaySelect" aria-label="曜日">
+                  <option value="0">月</option>
+                  <option value="1">火</option>
+                  <option value="2">水</option>
+                  <option value="3">木</option>
+                  <option value="4">金</option>
+                  <option value="5">土</option>
+                  <option value="6">日</option>
+                </select>
+                <input id="bookPageEntry" type="number" min="1" step="1" placeholder="ページ">
+                <button class="primary" id="addBookPages" type="button">追加</button>
+              </div>
+            </div>
+            <div class="entry-list" id="bookEntryList"></div>
+          </article>
 
-        <section class="book-planner" aria-label="読書プラン">
-          <div>
-            <h2>読書プラン</h2>
-            <p>タイトルとページ数を入れると、1日あたりの目安が出ます。</p>
-          </div>
-          <div class="book-fields">
-            <input id="bookTitle" type="text" placeholder="読む本のタイトル">
-            <input id="bookPages" type="number" min="1" step="1" placeholder="総ページ">
-            <button class="secondary" id="searchBooks" type="button">検索</button>
-          </div>
-          <div class="search-results" id="bookResults"></div>
-          <div class="book-stats">
-            <div class="book-stat">
-              <strong id="dailyTarget">0p</strong>
-              <p>1日あたり</p>
+          <article class="record-card" aria-label="アニメ">
+            <div>
+              <h2>アニメ</h2>
+              <p>タイトルを選んで、観た話数を追加します。</p>
             </div>
-            <div class="book-stat">
-              <strong id="pagesRead">0p</strong>
-              <p>読んだページ</p>
+            <div class="record-fields three">
+              <input id="animeTitle" type="text" placeholder="アニメタイトル">
+              <input id="animeEpisode" type="number" min="1" step="1" placeholder="話数">
+              <button class="secondary" id="searchAnime" type="button">検索</button>
             </div>
-            <div class="book-stat">
-              <strong id="pagesLeft">0p</strong>
-              <p>残り</p>
-            </div>
-          </div>
-          <div class="book-days" id="bookDays"></div>
-        </section>
+            <button class="primary" id="addEpisode" type="button">話数を追加</button>
+            <div class="search-results" id="animeResults"></div>
+            <div class="entry-list" id="episodeList"></div>
+          </article>
 
-        <section class="anime-planner" aria-label="アニメ記録">
-          <div>
-            <h2>アニメ記録</h2>
-            <p>タイトルを入れて、観た話数を追加します。</p>
-          </div>
-          <div class="anime-fields">
-            <input id="animeTitle" type="text" placeholder="観るアニメのタイトル">
-            <input id="animeEpisode" type="number" min="1" step="1" placeholder="話数">
-            <button class="secondary" id="searchAnime" type="button">検索</button>
-            <button class="primary" id="addEpisode" type="button">追加</button>
-          </div>
-          <div class="search-results" id="animeResults"></div>
-          <div class="episode-list" id="episodeList"></div>
+          <article class="record-card" aria-label="映画">
+            <div>
+              <h2>映画</h2>
+              <p>タイトルを検索して、観た映画として記録します。</p>
+            </div>
+            <div class="record-fields two">
+              <input id="movieTitle" type="text" placeholder="映画タイトル">
+              <button class="secondary" id="searchMovies" type="button">検索</button>
+            </div>
+            <button class="primary" id="addMovie" type="button">映画を記録</button>
+            <div class="search-results" id="movieResults"></div>
+            <div class="entry-list" id="movieList"></div>
+          </article>
         </section>
 
         <section class="tasks" id="taskGrid" aria-label="ノルマ一覧"></section>
@@ -1109,19 +1048,6 @@
         <section class="panel">
           <h2>週メモ</h2>
           <textarea id="weekNote" placeholder="今週の気づき、読みたい本、観たい作品、体調など"></textarea>
-        </section>
-
-        <section class="panel">
-          <h2>記録を追加</h2>
-          <form class="log-form" id="logForm">
-            <div class="form-row">
-              <select id="logType" aria-label="種別"></select>
-              <input id="logAmount" type="number" min="1" step="1" value="1" aria-label="数">
-            </div>
-            <input id="logTitle" type="text" placeholder="タイトル・内容">
-            <textarea id="logMemo" placeholder="メモ"></textarea>
-            <button class="primary" type="submit">追加</button>
-          </form>
         </section>
 
         <section class="panel">
@@ -1280,22 +1206,24 @@
     let selectedWeek = startOfWeek(new Date());
 
     const taskGrid = document.querySelector("#taskGrid");
-    const logType = document.querySelector("#logType");
-    const logAmount = document.querySelector("#logAmount");
-    const logTitle = document.querySelector("#logTitle");
-    const logMemo = document.querySelector("#logMemo");
     const weekNote = document.querySelector("#weekNote");
     const fileInput = document.querySelector("#fileInput");
     const bookTitle = document.querySelector("#bookTitle");
     const bookPages = document.querySelector("#bookPages");
-    const bookDays = document.querySelector("#bookDays");
+    const bookDaySelect = document.querySelector("#bookDaySelect");
+    const bookPageEntry = document.querySelector("#bookPageEntry");
+    const bookEntryList = document.querySelector("#bookEntryList");
     const animeTitle = document.querySelector("#animeTitle");
     const animeEpisode = document.querySelector("#animeEpisode");
     const episodeList = document.querySelector("#episodeList");
+    const movieTitle = document.querySelector("#movieTitle");
+    const movieList = document.querySelector("#movieList");
     const bookResults = document.querySelector("#bookResults");
     const animeResults = document.querySelector("#animeResults");
+    const movieResults = document.querySelector("#movieResults");
     let bookSearchResults = [];
     let animeSearchResults = [];
+    let movieSearchResults = [];
 
     function loadState() {
       try {
@@ -1344,6 +1272,7 @@
           note: "",
           bookPlan: defaultBookPlan(),
           animePlan: defaultAnimePlan(),
+          moviePlan: defaultMoviePlan(),
           claimedRewards: []
         };
       }
@@ -1352,6 +1281,8 @@
       if (!Array.isArray(state.weeks[key].bookPlan.dailyPages)) state.weeks[key].bookPlan.dailyPages = Array(7).fill(0);
       if (!state.weeks[key].animePlan) state.weeks[key].animePlan = defaultAnimePlan();
       if (!Array.isArray(state.weeks[key].animePlan.episodes)) state.weeks[key].animePlan.episodes = [];
+      if (!state.weeks[key].moviePlan) state.weeks[key].moviePlan = defaultMoviePlan();
+      if (!Array.isArray(state.weeks[key].moviePlan.movies)) state.weeks[key].moviePlan.movies = [];
       return state.weeks[key];
     }
 
@@ -1361,6 +1292,10 @@
 
     function defaultAnimePlan() {
       return { title: "", episodes: [] };
+    }
+
+    function defaultMoviePlan() {
+      return { movies: [] };
     }
 
     function clampCount(value) {
@@ -1396,6 +1331,7 @@
     function goalProgress(goal, week) {
       if (goal.id === "book") return getBookStats(week).percent;
       if (goal.id === "anime") return Math.min(1, getAnimeCount(week) / goal.goal);
+      if (goal.id === "movie") return Math.min(1, getMovieCount(week) / goal.goal);
       return Math.min(1, (week.counts[goal.id] || 0) / goal.goal);
     }
 
@@ -1405,12 +1341,18 @@
         return stats.total ? stats.read >= stats.total : clampCount(week.counts.book) >= 1;
       }
       if (goal.id === "anime") return getAnimeCount(week) >= goal.goal;
+      if (goal.id === "movie") return getMovieCount(week) >= goal.goal;
       return (week.counts[goal.id] || 0) >= goal.goal;
     }
 
     function getAnimeCount(week) {
       const plan = week.animePlan || defaultAnimePlan();
       return plan.episodes.length || clampCount(week.counts.anime);
+    }
+
+    function getMovieCount(week) {
+      const plan = week.moviePlan || defaultMoviePlan();
+      return plan.movies.length || clampCount(week.counts.movie);
     }
 
     function render() {
@@ -1429,8 +1371,9 @@
       weekNote.value = week.note || "";
       renderBookPlanner(week);
       renderAnimePlanner(week);
+      renderMoviePlanner(week);
       renderTasks(week);
-      renderRewards(week, percent);
+      renderAvatar();
       renderLogs(week);
       renderHistory(key);
       renderMetrics();
@@ -1448,9 +1391,11 @@
       taskGrid.innerHTML = goals.map((goal) => {
         const isBook = goal.id === "book";
         const isAnime = goal.id === "anime";
+        const isMovie = goal.id === "movie";
         const stats = getBookStats(week);
         const animeCount = getAnimeCount(week);
-        const value = isBook && stats.total ? stats.read : isAnime ? animeCount : week.counts[goal.id] || 0;
+        const movieCount = getMovieCount(week);
+        const value = isBook && stats.total ? stats.read : isAnime ? animeCount : isMovie ? movieCount : week.counts[goal.id] || 0;
         const target = isBook && stats.total ? stats.total : goal.goal;
         const unit = isBook && stats.total ? "p" : goal.unit;
         const percent = Math.round(goalProgress(goal, week) * 100);
@@ -1459,6 +1404,8 @@
           ? '<button class="primary" type="button" data-action="focus-book">ページ進捗を記録</button>'
           : isAnime && (week.animePlan.title || week.animePlan.episodes.length)
           ? '<button class="primary" type="button" data-action="focus-anime">話数を記録</button>'
+          : isMovie
+          ? '<button class="primary" type="button" data-action="focus-movie">映画を記録</button>'
           : `
             <button class="step" data-action="minus" data-id="${goal.id}" ${value <= 0 ? "disabled" : ""} aria-label="${goal.label}を減らす">-</button>
             <input class="quick-field" data-action="set" data-id="${goal.id}" value="${value}" inputmode="numeric" aria-label="${goal.label}の数">
@@ -1501,12 +1448,15 @@
       document.querySelector("#dailyTarget").textContent = `${stats.daily}p`;
       document.querySelector("#pagesRead").textContent = `${stats.read}p`;
       document.querySelector("#pagesLeft").textContent = `${stats.left}p`;
-      bookDays.innerHTML = labels.map((label, index) => `
-        <div class="day-cell">
-          <label for="bookDay${index}">${label}</label>
-          <input id="bookDay${index}" data-action="book-day" data-index="${index}" type="number" min="0" step="1" value="${clampCount(plan.dailyPages[index])}" inputmode="numeric" aria-label="${label}曜日の読書ページ">
-        </div>
-      `).join("");
+      bookEntryList.innerHTML = labels.map((label, index) => {
+        const pages = clampCount(plan.dailyPages[index]);
+        return `
+          <span class="entry-chip">
+            ${label} ${pages}p
+            <button type="button" data-action="clear-book-day" data-index="${index}" aria-label="${label}曜日の記録を削除">×</button>
+          </span>
+        `;
+      }).join("");
     }
 
     function renderAnimePlanner(week) {
@@ -1517,12 +1467,27 @@
           .slice()
           .sort((a, b) => a - b)
           .map((episode) => `
-            <span class="episode-chip">
+            <span class="entry-chip">
               ${episode}話
               <button type="button" data-action="delete-episode" data-episode="${episode}" aria-label="${episode}話を削除">×</button>
             </span>
           `).join("")
         : '<div class="empty">まだ話数がありません。</div>';
+    }
+
+    function renderMoviePlanner(week) {
+      const plan = week.moviePlan || defaultMoviePlan();
+      movieList.innerHTML = plan.movies.length
+        ? plan.movies
+          .slice()
+          .sort((a, b) => b.createdAt - a.createdAt)
+          .map((movie) => `
+            <span class="entry-chip">
+              ${escapeHtml(movie.title)}
+              <button type="button" data-action="delete-movie" data-id="${movie.id}" aria-label="${escapeHtml(movie.title)}を削除">×</button>
+            </span>
+          `).join("")
+        : '<div class="empty">まだ映画がありません。</div>';
     }
 
     function renderBookResults(items) {
@@ -1549,27 +1514,56 @@
         : '<div class="empty">候補が見つかりません。</div>';
     }
 
+    function renderMovieResults(items) {
+      movieSearchResults = items;
+      movieResults.innerHTML = items.length
+        ? items.map((item, index) => `
+          <button class="result-button" type="button" data-action="select-movie" data-index="${index}">
+            <strong>${escapeHtml(item.title)}</strong>
+            <span>${escapeHtml(item.detail || "映画候補")}</span>
+          </button>
+        `).join("")
+        : '<div class="empty">候補が見つかりません。</div>';
+    }
+
     async function searchBookCandidates() {
       const query = bookTitle.value.trim();
       if (!query) return;
       bookResults.innerHTML = '<div class="empty">検索中...</div>';
       try {
-        const url = `https://www.googleapis.com/books/v1/volumes?q=intitle:${encodeURIComponent(query)}&maxResults=6&printType=books&langRestrict=ja`;
+        const url = `https://openlibrary.org/search.json?title=${encodeURIComponent(query)}&limit=6&language=jpn`;
         const response = await fetch(url);
         if (!response.ok) throw new Error("Book search failed");
         const data = await response.json();
-        const items = (data.items || []).map((item) => {
-          const info = item.volumeInfo || {};
-          return {
-            title: info.title || "",
-            authors: (info.authors || []).join(", "),
-            pageCount: clampCount(info.pageCount)
-          };
-        }).filter((item) => item.title);
+        let items = (data.docs || []).map((item) => ({
+          title: item.title || "",
+          authors: (item.author_name || []).slice(0, 2).join(", "),
+          pageCount: clampCount(item.number_of_pages_median)
+        })).filter((item) => item.title);
+        if (!items.length) items = await searchGoogleBooks(query);
         renderBookResults(items);
       } catch (error) {
-        bookResults.innerHTML = '<div class="empty">検索できませんでした。</div>';
+        try {
+          renderBookResults(await searchGoogleBooks(query));
+        } catch (fallbackError) {
+          bookResults.innerHTML = '<div class="empty">検索できませんでした。タイトルを手入力しても記録できます。</div>';
+        }
       }
+    }
+
+    async function searchGoogleBooks(query) {
+      const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=6&printType=books`;
+      const response = await fetch(url);
+      if (!response.ok) throw new Error("Google Books search failed");
+      const data = await response.json();
+      return (data.items || []).map((item) => {
+        const info = item.volumeInfo || {};
+        return {
+          title: info.title || "",
+          authors: (info.authors || []).slice(0, 2).join(", "),
+          pageCount: clampCount(info.pageCount)
+        };
+      }).filter((item) => item.title);
     }
 
     async function searchAnimeCandidates() {
@@ -1589,6 +1583,27 @@
         renderAnimeResults(items);
       } catch (error) {
         animeResults.innerHTML = '<div class="empty">検索できませんでした。</div>';
+      }
+    }
+
+    async function searchMovieCandidates() {
+      const query = movieTitle.value.trim();
+      if (!query) return;
+      movieResults.innerHTML = '<div class="empty">検索中...</div>';
+      try {
+        const url = `https://ja.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(query + " 映画")}&limit=6&namespace=0&format=json&origin=*`;
+        const response = await fetch(url);
+        if (!response.ok) throw new Error("Movie search failed");
+        const data = await response.json();
+        const titles = data[1] || [];
+        const descriptions = data[2] || [];
+        const items = titles.map((title, index) => ({
+          title: title.replace(/ - Wikipedia$/, "").replace(/ \(映画\)$/, ""),
+          detail: descriptions[index] || "Wikipedia検索候補"
+        })).filter((item) => item.title);
+        renderMovieResults(items);
+      } catch (error) {
+        movieResults.innerHTML = '<div class="empty">検索できませんでした。タイトルを手入力しても記録できます。</div>';
       }
     }
 
@@ -1891,6 +1906,11 @@
         animeEpisode.focus();
         return;
       }
+      if (button.dataset.action === "focus-movie") {
+        movieTitle.scrollIntoView({ behavior: "smooth", block: "center" });
+        movieTitle.focus();
+        return;
+      }
       const week = currentWeek();
       const id = button.dataset.id;
       if (button.dataset.action === "plus") {
@@ -1933,12 +1953,37 @@
       render();
     });
 
-    bookDays.addEventListener("change", (event) => {
-      const input = event.target.closest("input[data-action='book-day']");
-      if (!input) return;
-      const index = Number(input.dataset.index);
+    document.querySelector("#addBookPages").addEventListener("click", () => {
+      const index = Number(bookDaySelect.value);
       if (!Number.isInteger(index)) return;
-      currentWeek().bookPlan.dailyPages[index] = clampCount(input.value);
+      const pages = clampCount(bookPageEntry.value);
+      if (pages <= 0) return;
+      const week = currentWeek();
+      week.bookPlan.dailyPages[index] = clampCount(week.bookPlan.dailyPages[index]) + pages;
+      week.logs.push({
+        id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()),
+        type: "book",
+        amount: pages,
+        title: week.bookPlan.title || "読書",
+        memo: `${["月", "火", "水", "木", "金", "土", "日"][index]}曜日 ${pages}p`,
+        createdAt: Date.now()
+      });
+      bookPageEntry.value = "";
+      render();
+    });
+
+    bookPageEntry.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        document.querySelector("#addBookPages").click();
+      }
+    });
+
+    bookEntryList.addEventListener("click", (event) => {
+      const button = event.target.closest("button[data-action='clear-book-day']");
+      if (!button) return;
+      const index = Number(button.dataset.index);
+      currentWeek().bookPlan.dailyPages[index] = 0;
       render();
     });
 
@@ -1971,6 +2016,15 @@
       if (episode <= 0) return;
       const plan = currentWeek().animePlan;
       if (!plan.episodes.includes(episode)) plan.episodes.push(episode);
+      currentWeek().counts.anime = plan.episodes.length;
+      currentWeek().logs.push({
+        id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()),
+        type: "anime",
+        amount: 1,
+        title: plan.title || "アニメ",
+        memo: `${episode}話`,
+        createdAt: Date.now()
+      });
       animeEpisode.value = "";
       render();
     });
@@ -1987,6 +2041,59 @@
       if (!button) return;
       const episode = Number(button.dataset.episode);
       currentWeek().animePlan.episodes = currentWeek().animePlan.episodes.filter((item) => item !== episode);
+      currentWeek().counts.anime = currentWeek().animePlan.episodes.length;
+      render();
+    });
+
+    document.querySelector("#searchMovies").addEventListener("click", searchMovieCandidates);
+
+    movieTitle.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        searchMovieCandidates();
+      }
+    });
+
+    movieResults.addEventListener("click", (event) => {
+      const button = event.target.closest("button[data-action='select-movie']");
+      if (!button) return;
+      const item = movieSearchResults[Number(button.dataset.index)];
+      if (!item) return;
+      movieTitle.value = item.title;
+      movieResults.innerHTML = "";
+    });
+
+    document.querySelector("#addMovie").addEventListener("click", () => {
+      const title = movieTitle.value.trim();
+      if (!title) return;
+      const week = currentWeek();
+      const movie = {
+        id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()),
+        title,
+        createdAt: Date.now()
+      };
+      week.moviePlan.movies.push(movie);
+      week.counts.movie = week.moviePlan.movies.length;
+      week.logs.push({
+        id: movie.id,
+        type: "movie",
+        amount: 1,
+        title,
+        memo: "",
+        createdAt: movie.createdAt
+      });
+      movieTitle.value = "";
+      render();
+    });
+
+    movieList.addEventListener("click", (event) => {
+      const button = event.target.closest("button[data-action='delete-movie']");
+      if (!button) return;
+      const id = button.dataset.id;
+      const week = currentWeek();
+      week.moviePlan.movies = week.moviePlan.movies.filter((movie) => movie.id !== id);
+      week.logs = week.logs.filter((log) => log.id !== id);
+      week.counts.movie = week.moviePlan.movies.length;
       render();
     });
 
@@ -2006,25 +2113,6 @@
         week.counts[log.type] = Math.max(0, clampCount(week.counts[log.type]) - clampCount(log.amount));
       }
       week.logs = week.logs.filter((item) => item.id !== button.dataset.id);
-      render();
-    });
-
-    document.querySelector("#rewardList").addEventListener("click", (event) => {
-      const button = event.target.closest("button[data-action='claim-reward']");
-      if (!button) return;
-      const week = currentWeek();
-      if (!week.claimedRewards.includes(button.dataset.id)) {
-        week.claimedRewards.push(button.dataset.id);
-      }
-      render();
-    });
-
-    document.querySelector("#logForm").addEventListener("submit", (event) => {
-      event.preventDefault();
-      addLog(logType.value, logAmount.value, logTitle.value, logMemo.value);
-      logAmount.value = "1";
-      logTitle.value = "";
-      logMemo.value = "";
       render();
     });
 
@@ -2056,6 +2144,7 @@
         note: "",
         bookPlan: defaultBookPlan(),
         animePlan: defaultAnimePlan(),
+        moviePlan: defaultMoviePlan(),
         claimedRewards: []
       };
       render();
@@ -2087,19 +2176,6 @@
         fileInput.value = "";
       }
     });
-
-    goals.forEach((goal) => {
-      const option = document.createElement("option");
-      option.value = goal.id;
-      option.textContent = goal.label;
-      logType.append(option);
-    });
-
-    logType.addEventListener("change", () => {
-      const goal = goals.find((item) => item.id === logType.value);
-      logTitle.placeholder = goal ? goal.placeholder : "タイトル・内容";
-    });
-    logType.dispatchEvent(new Event("change"));
 
     if ("serviceWorker" in navigator && location.protocol !== "file:") {
       navigator.serviceWorker.register("./sw.js").catch(() => {});
