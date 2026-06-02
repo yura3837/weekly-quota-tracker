@@ -2,7 +2,7 @@
   "name": "週ノルマ記録",
   "short_name": "週ノルマ",
   "description": "本、アニメ、映画、運動の週ノルマを記録するスマホ向けアプリ。",
-  "start_url": "./weekly-tracker.html",
+  "start_url": "./weekly-tracker.html?v=2",
   "scope": "./",
   "display": "standalone",
   "background_color": "#f7f8f5",
