@@ -970,7 +970,7 @@
           <article class="record-card" aria-label="本">
             <div>
               <h2>本</h2>
-              <p>読む本を決めて、日ごとにページ数を足します。</p>
+              <p>読む本を決めて、日付ごとに開始ページから終了ページまで記録します。</p>
             </div>
             <div class="record-fields three">
               <input id="bookTitle" type="text" placeholder="本のタイトル">
@@ -981,7 +981,7 @@
             <div class="book-stats">
               <div class="book-stat">
                 <strong id="dailyTarget">0p</strong>
-                <p>1日あたり</p>
+                <p>1日目安</p>
               </div>
               <div class="book-stat">
                 <strong id="pagesRead">0p</strong>
@@ -994,7 +994,7 @@
             </div>
             <div>
               <p>読書記録</p>
-              <div class="record-fields three">
+              <div class="record-fields four">
                 <select id="bookDaySelect" aria-label="曜日">
                   <option value="0">月</option>
                   <option value="1">火</option>
@@ -1004,7 +1004,8 @@
                   <option value="5">土</option>
                   <option value="6">日</option>
                 </select>
-                <input id="bookPageEntry" type="number" min="1" step="1" placeholder="ページ">
+                <input id="bookStartPage" type="number" min="1" step="1" placeholder="開始p">
+                <input id="bookEndPage" type="number" min="1" step="1" placeholder="終了p">
                 <button class="primary" id="addBookPages" type="button">追加</button>
               </div>
             </div>
@@ -1211,7 +1212,8 @@
     const bookTitle = document.querySelector("#bookTitle");
     const bookPages = document.querySelector("#bookPages");
     const bookDaySelect = document.querySelector("#bookDaySelect");
-    const bookPageEntry = document.querySelector("#bookPageEntry");
+    const bookStartPage = document.querySelector("#bookStartPage");
+    const bookEndPage = document.querySelector("#bookEndPage");
     const bookEntryList = document.querySelector("#bookEntryList");
     const animeTitle = document.querySelector("#animeTitle");
     const animeEpisode = document.querySelector("#animeEpisode");
@@ -1278,7 +1280,9 @@
       }
       if (!state.weeks[key].claimedRewards) state.weeks[key].claimedRewards = [];
       if (!state.weeks[key].bookPlan) state.weeks[key].bookPlan = defaultBookPlan();
-      if (!Array.isArray(state.weeks[key].bookPlan.dailyPages)) state.weeks[key].bookPlan.dailyPages = Array(7).fill(0);
+      if (!Array.isArray(state.weeks[key].bookPlan.dailyRanges)) {
+        state.weeks[key].bookPlan.dailyRanges = migrateBookRanges(state.weeks[key].bookPlan.dailyPages);
+      }
       if (!state.weeks[key].animePlan) state.weeks[key].animePlan = defaultAnimePlan();
       if (!Array.isArray(state.weeks[key].animePlan.episodes)) state.weeks[key].animePlan.episodes = [];
       if (!state.weeks[key].moviePlan) state.weeks[key].moviePlan = defaultMoviePlan();
@@ -1287,7 +1291,21 @@
     }
 
     function defaultBookPlan() {
-      return { title: "", totalPages: 0, dailyPages: Array(7).fill(0) };
+      return { title: "", totalPages: 0, dailyRanges: Array(7).fill(null) };
+    }
+
+    function migrateBookRanges(dailyPages) {
+      const ranges = Array(7).fill(null);
+      if (!Array.isArray(dailyPages)) return ranges;
+      let cursor = 1;
+      dailyPages.forEach((value, index) => {
+        const pages = clampCount(value);
+        if (pages > 0) {
+          ranges[index] = { start: cursor, end: cursor + pages - 1 };
+          cursor += pages;
+        }
+      });
+      return ranges;
     }
 
     function defaultAnimePlan() {
@@ -1318,7 +1336,7 @@
     function getBookStats(week) {
       const plan = week.bookPlan || defaultBookPlan();
       const total = clampCount(plan.totalPages);
-      const read = (plan.dailyPages || []).reduce((sum, value) => sum + clampCount(value), 0);
+      const read = (plan.dailyRanges || []).reduce((sum, range) => sum + rangePages(range), 0);
       return {
         total,
         read,
@@ -1326,6 +1344,28 @@
         daily: total ? Math.ceil(total / 7) : 0,
         percent: total ? Math.min(1, read / total) : Math.min(1, clampCount(week.counts.book) / 1)
       };
+    }
+
+    function rangePages(range) {
+      if (!range) return 0;
+      const start = clampCount(range.start);
+      const end = clampCount(range.end);
+      if (start <= 0 || end < start) return 0;
+      return end - start + 1;
+    }
+
+    function recommendedBookRange(total, index) {
+      const safeTotal = clampCount(total);
+      if (!safeTotal) return null;
+      const perDay = Math.ceil(safeTotal / 7);
+      const start = index * perDay + 1;
+      const end = Math.min(safeTotal, (index + 1) * perDay);
+      if (start > safeTotal) return null;
+      return { start, end };
+    }
+
+    function weekDateForIndex(index) {
+      return new Date(selectedWeek.getTime() + index * DAY_MS);
     }
 
     function goalProgress(goal, week) {
@@ -1449,11 +1489,15 @@
       document.querySelector("#pagesRead").textContent = `${stats.read}p`;
       document.querySelector("#pagesLeft").textContent = `${stats.left}p`;
       bookEntryList.innerHTML = labels.map((label, index) => {
-        const pages = clampCount(plan.dailyPages[index]);
+        const date = formatDate(weekDateForIndex(index));
+        const recommended = recommendedBookRange(plan.totalPages, index);
+        const recorded = plan.dailyRanges[index];
+        const recommendedText = recommended ? `目安 ${recommended.start}-${recommended.end}p` : "目安 未設定";
+        const recordedText = recorded ? `記録 ${recorded.start}-${recorded.end}p` : "記録なし";
         return `
           <span class="entry-chip">
-            ${label} ${pages}p
-            <button type="button" data-action="clear-book-day" data-index="${index}" aria-label="${label}曜日の記録を削除">×</button>
+            ${date} ${label} / ${recommendedText} / ${recordedText}
+            <button type="button" data-action="clear-book-day" data-index="${index}" aria-label="${date} ${label}曜日の記録を削除">×</button>
           </span>
         `;
       }).join("");
@@ -1956,34 +2000,37 @@
     document.querySelector("#addBookPages").addEventListener("click", () => {
       const index = Number(bookDaySelect.value);
       if (!Number.isInteger(index)) return;
-      const pages = clampCount(bookPageEntry.value);
-      if (pages <= 0) return;
+      const start = clampCount(bookStartPage.value);
+      const end = clampCount(bookEndPage.value);
+      if (start <= 0 || end < start) return;
       const week = currentWeek();
-      week.bookPlan.dailyPages[index] = clampCount(week.bookPlan.dailyPages[index]) + pages;
+      const pages = end - start + 1;
+      week.bookPlan.dailyRanges[index] = { start, end };
       week.logs.push({
         id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()),
         type: "book",
         amount: pages,
         title: week.bookPlan.title || "読書",
-        memo: `${["月", "火", "水", "木", "金", "土", "日"][index]}曜日 ${pages}p`,
+        memo: `${formatDate(weekDateForIndex(index))} ${["月", "火", "水", "木", "金", "土", "日"][index]} ${start}-${end}p`,
         createdAt: Date.now()
       });
-      bookPageEntry.value = "";
+      bookStartPage.value = "";
+      bookEndPage.value = "";
       render();
     });
 
-    bookPageEntry.addEventListener("keydown", (event) => {
+    [bookStartPage, bookEndPage].forEach((input) => input.addEventListener("keydown", (event) => {
       if (event.key === "Enter") {
         event.preventDefault();
         document.querySelector("#addBookPages").click();
       }
-    });
+    }));
 
     bookEntryList.addEventListener("click", (event) => {
       const button = event.target.closest("button[data-action='clear-book-day']");
       if (!button) return;
       const index = Number(button.dataset.index);
-      currentWeek().bookPlan.dailyPages[index] = 0;
+      currentWeek().bookPlan.dailyRanges[index] = null;
       render();
     });
 

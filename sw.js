@@ -1,4 +1,4 @@
-const CACHE_NAME = "weekly-quota-tracker-v3";
+const CACHE_NAME = "weekly-quota-tracker-v4";
 const ASSETS = [
   "./weekly-tracker.html",
   "./manifest.webmanifest",
