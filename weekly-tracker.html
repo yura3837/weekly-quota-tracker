@@ -1014,14 +1014,14 @@
           <article class="record-card" aria-label="アニメ">
             <div>
               <h2>アニメ</h2>
-              <p>タイトルを選んで、観た話数を追加します。</p>
+              <p>タイトルを選んで、観た回をその都度追加します。</p>
             </div>
             <div class="record-fields three">
               <input id="animeTitle" type="text" placeholder="アニメタイトル">
-              <input id="animeEpisode" type="number" min="1" step="1" placeholder="話数">
+              <input id="animeEpisode" type="number" min="1" step="1" placeholder="見た回">
               <button class="secondary" id="searchAnime" type="button">検索</button>
             </div>
-            <button class="primary" id="addEpisode" type="button">話数を追加</button>
+            <button class="primary" id="addEpisode" type="button">この回を記録</button>
             <div class="search-results" id="animeResults"></div>
             <div class="entry-list" id="episodeList"></div>
           </article>
@@ -1468,11 +1468,11 @@
           .sort((a, b) => a - b)
           .map((episode) => `
             <span class="entry-chip">
-              ${episode}話
-              <button type="button" data-action="delete-episode" data-episode="${episode}" aria-label="${episode}話を削除">×</button>
+              第${episode}話
+              <button type="button" data-action="delete-episode" data-episode="${episode}" aria-label="第${episode}話を削除">×</button>
             </span>
           `).join("")
-        : '<div class="empty">まだ話数がありません。</div>';
+        : '<div class="empty">まだ視聴回がありません。</div>';
     }
 
     function renderMoviePlanner(week) {
@@ -1508,7 +1508,7 @@
         ? items.map((item, index) => `
           <button class="result-button" type="button" data-action="select-anime" data-index="${index}">
             <strong>${escapeHtml(item.title)}</strong>
-            <span>${escapeHtml([item.year || "", item.episodes ? item.episodes + "話" : ""].filter(Boolean).join(" ・ "))}</span>
+            <span>${escapeHtml([item.year || "", item.episodes ? "全" + item.episodes + "話" : ""].filter(Boolean).join(" ・ "))}</span>
           </button>
         `).join("")
         : '<div class="empty">候補が見つかりません。</div>';
@@ -2015,14 +2015,20 @@
       const episode = clampCount(animeEpisode.value);
       if (episode <= 0) return;
       const plan = currentWeek().animePlan;
-      if (!plan.episodes.includes(episode)) plan.episodes.push(episode);
-      currentWeek().counts.anime = plan.episodes.length;
-      currentWeek().logs.push({
+      if (plan.episodes.includes(episode)) {
+        animeEpisode.value = "";
+        render();
+        return;
+      }
+      plan.episodes.push(episode);
+      const week = currentWeek();
+      week.counts.anime = plan.episodes.length;
+      week.logs.push({
         id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()),
         type: "anime",
         amount: 1,
         title: plan.title || "アニメ",
-        memo: `${episode}話`,
+        memo: `第${episode}話`,
         createdAt: Date.now()
       });
       animeEpisode.value = "";
@@ -2040,8 +2046,11 @@
       const button = event.target.closest("button[data-action='delete-episode']");
       if (!button) return;
       const episode = Number(button.dataset.episode);
-      currentWeek().animePlan.episodes = currentWeek().animePlan.episodes.filter((item) => item !== episode);
-      currentWeek().counts.anime = currentWeek().animePlan.episodes.length;
+      const week = currentWeek();
+      const title = week.animePlan.title || "アニメ";
+      week.animePlan.episodes = week.animePlan.episodes.filter((item) => item !== episode);
+      week.logs = week.logs.filter((log) => !(log.type === "anime" && log.title === title && log.memo === `第${episode}話`));
+      week.counts.anime = week.animePlan.episodes.length;
       render();
     });
 
