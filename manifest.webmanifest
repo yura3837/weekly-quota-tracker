@@ -1,0 +1,18 @@
+{
+  "name": "週ノルマ記録",
+  "short_name": "週ノルマ",
+  "description": "本、アニメ、映画、運動の週ノルマを記録するスマホ向けアプリ。",
+  "start_url": "./weekly-tracker.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f7f8f5",
+  "theme_color": "#2f7d50",
+  "icons": [
+    {
+      "src": "./weekly-tracker-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

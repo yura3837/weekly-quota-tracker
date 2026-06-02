@@ -1,0 +1,2111 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#2f7d50">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="週ノルマ">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./weekly-tracker-icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="./weekly-tracker-icon.svg">
+  <title>週ノルマ記録</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f7f8f5;
+      --panel: #ffffff;
+      --ink: #20231f;
+      --muted: #687066;
+      --line: #dfe4dc;
+      --green: #2f7d50;
+      --green-soft: #dcebdd;
+      --blue: #2d66a3;
+      --blue-soft: #dfeafa;
+      --red: #b24b3f;
+      --yellow: #f1c75b;
+      --shadow: 0 18px 50px rgba(31, 38, 29, 0.11);
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background:
+        linear-gradient(180deg, rgba(247, 248, 245, 0.9), rgba(247, 248, 245, 1)),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cpath fill='%23dfe4dc' fill-opacity='.55' d='M0 19h160v2H0zm0 40h160v2H0zm0 40h160v2H0zm0 40h160v2H0zM19 0h2v160h-2zm40 0h2v160h-2zm40 0h2v160h-2zm40 0h2v160h-2z'/%3E%3C/svg%3E");
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    button,
+    input,
+    textarea,
+    select {
+      font: inherit;
+    }
+
+    button {
+      border: 0;
+      cursor: pointer;
+    }
+
+    .app {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 28px 18px calc(42px + env(safe-area-inset-bottom));
+    }
+
+    header {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: end;
+      gap: 18px;
+      margin-bottom: 22px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(28px, 4vw, 48px);
+      line-height: 1.04;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.7;
+    }
+
+    .week-picker {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      border-radius: 8px;
+    }
+
+    .icon-button {
+      width: 38px;
+      height: 38px;
+      display: inline-grid;
+      place-items: center;
+      border-radius: 8px;
+      background: #eef2eb;
+      color: var(--ink);
+    }
+
+    .icon-button:hover {
+      background: #e2e8df;
+    }
+
+    .week-label {
+      min-width: 186px;
+      text-align: center;
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.25fr) minmax(320px, 0.75fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .overview {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(180px, 240px);
+      gap: 16px;
+      padding: 18px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      margin-bottom: 18px;
+    }
+
+    .reward-board {
+      display: grid;
+      gap: 12px;
+      padding: 16px;
+      border: 1px solid var(--line);
+      background: #fffdf7;
+      border-radius: 8px;
+      box-shadow: 0 10px 30px rgba(31, 38, 29, 0.07);
+      margin-bottom: 18px;
+    }
+
+    .avatar-panel {
+      display: grid;
+      grid-template-columns: 128px minmax(0, 1fr);
+      gap: 14px;
+      align-items: center;
+      padding: 12px;
+      border: 1px solid #ead9a5;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #fffaf0, #f6fbff);
+    }
+
+    .avatar-frame {
+      width: 128px;
+      aspect-ratio: 1;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      background: #111816;
+      overflow: hidden;
+    }
+
+    .avatar-frame svg {
+      width: 118px;
+      height: 118px;
+    }
+
+    .avatar-copy {
+      min-width: 0;
+    }
+
+    .avatar-copy strong {
+      display: block;
+      font-size: 20px;
+      line-height: 1.25;
+    }
+
+    .avatar-copy span {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .avatar-meter {
+      height: 10px;
+      margin-top: 10px;
+      border-radius: 999px;
+      background: #e9eee6;
+      overflow: hidden;
+    }
+
+    .avatar-meter i {
+      display: block;
+      width: min(100%, calc(var(--value) * 1%));
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #2d66a3, #f1c75b);
+    }
+
+    .book-planner {
+      display: grid;
+      gap: 14px;
+      padding: 16px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      border-radius: 8px;
+      box-shadow: 0 10px 30px rgba(31, 38, 29, 0.07);
+      margin-bottom: 18px;
+    }
+
+    .anime-planner {
+      display: grid;
+      gap: 14px;
+      padding: 16px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      border-radius: 8px;
+      box-shadow: 0 10px 30px rgba(31, 38, 29, 0.07);
+      margin-bottom: 18px;
+    }
+
+    .anime-planner h2 {
+      margin-bottom: 2px;
+    }
+
+    .anime-planner p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .anime-fields {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 92px 80px 80px;
+      gap: 8px;
+    }
+
+    .secondary {
+      min-height: 48px;
+      border-radius: 8px;
+      background: #eef2eb;
+      color: var(--ink);
+      font-weight: 800;
+    }
+
+    .search-results {
+      display: grid;
+      gap: 8px;
+    }
+
+    .result-button {
+      width: 100%;
+      display: grid;
+      gap: 3px;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfcfa;
+      color: var(--ink);
+      text-align: left;
+    }
+
+    .result-button strong {
+      font-size: 14px;
+      line-height: 1.35;
+    }
+
+    .result-button span {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .episode-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .episode-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 36px;
+      padding: 0 8px 0 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfcfa;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .episode-chip button {
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      background: #eef2eb;
+      color: var(--muted);
+      font-weight: 900;
+    }
+
+    .book-planner h2 {
+      margin-bottom: 2px;
+    }
+
+    .book-planner p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .book-fields {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 132px 88px;
+      gap: 8px;
+    }
+
+    .book-stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .book-stat {
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfcfa;
+    }
+
+    .book-stat strong {
+      display: block;
+      font-size: 20px;
+      line-height: 1.1;
+    }
+
+    .book-days {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .day-cell {
+      display: grid;
+      gap: 5px;
+    }
+
+    .day-cell label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .day-cell input {
+      padding: 9px 6px;
+      text-align: center;
+      font-weight: 800;
+    }
+
+    .reward-top {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .reward-top h2 {
+      margin-bottom: 3px;
+    }
+
+    .reward-top p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 13px;
+    }
+
+    .reward-token {
+      min-width: 74px;
+      padding: 10px;
+      border-radius: 8px;
+      text-align: center;
+      background: var(--yellow);
+      color: #3a2b05;
+      font-weight: 800;
+    }
+
+    .reward-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .reward-item {
+      display: grid;
+      grid-template-columns: 34px minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      padding: 10px;
+      border: 1px solid #ead9a5;
+      border-radius: 8px;
+      background: #fffaf0;
+    }
+
+    .reward-item.locked {
+      opacity: 0.58;
+      background: #fbfcfa;
+      border-color: var(--line);
+    }
+
+    .reward-mark {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      background: #f5e5ad;
+      color: #6c4d00;
+      font-weight: 900;
+    }
+
+    .reward-copy {
+      min-width: 0;
+    }
+
+    .reward-copy strong {
+      display: block;
+      line-height: 1.35;
+      overflow-wrap: anywhere;
+    }
+
+    .reward-copy span {
+      display: block;
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+      overflow-wrap: anywhere;
+    }
+
+    .claim {
+      min-width: 72px;
+      height: 34px;
+      padding: 0 10px;
+      border-radius: 8px;
+      background: var(--ink);
+      color: white;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .claim:disabled {
+      background: #e5e8e1;
+      color: var(--muted);
+      cursor: default;
+    }
+
+    .score {
+      display: grid;
+      gap: 10px;
+      align-content: center;
+    }
+
+    .score strong {
+      font-size: clamp(40px, 7vw, 72px);
+      line-height: 0.95;
+      letter-spacing: 0;
+    }
+
+    .score span {
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .ring {
+      aspect-ratio: 1;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: conic-gradient(var(--green) calc(var(--p) * 1%), #edf1ea 0);
+      position: relative;
+      min-width: 160px;
+    }
+
+    .ring::after {
+      content: "";
+      position: absolute;
+      inset: 15px;
+      border-radius: 50%;
+      background: var(--panel);
+    }
+
+    .ring span {
+      position: relative;
+      z-index: 1;
+      font-weight: 800;
+      font-size: 30px;
+    }
+
+    .tasks {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .task-card {
+      min-height: 236px;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 16px;
+      padding: 16px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: 0 10px 30px rgba(31, 38, 29, 0.07);
+    }
+
+    .task-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .task-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .badge {
+      width: 42px;
+      height: 42px;
+      flex: 0 0 auto;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      background: var(--blue-soft);
+      color: var(--blue);
+    }
+
+    .badge svg,
+    .icon-button svg,
+    .small-action svg {
+      width: 20px;
+      height: 20px;
+      stroke: currentColor;
+      stroke-width: 2;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 20px;
+      letter-spacing: 0;
+    }
+
+    .task-title p,
+    .metric p {
+      margin: 3px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .count {
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .count strong {
+      font-size: 28px;
+      line-height: 1;
+    }
+
+    .count span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .progress {
+      height: 11px;
+      overflow: hidden;
+      background: #edf1ea;
+      border-radius: 999px;
+    }
+
+    .bar {
+      width: min(100%, calc(var(--value) * 1%));
+      height: 100%;
+      background: linear-gradient(90deg, var(--green), #72a95a);
+      border-radius: inherit;
+      transition: width 180ms ease;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: 44px minmax(0, 1fr) 44px;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .controls .primary {
+      grid-column: 1 / -1;
+    }
+
+    .step {
+      height: 44px;
+      border-radius: 8px;
+      font-size: 24px;
+      font-weight: 700;
+      background: #eef2eb;
+      color: var(--ink);
+    }
+
+    .step.add {
+      background: var(--green);
+      color: white;
+    }
+
+    .step:disabled {
+      opacity: 0.42;
+      cursor: not-allowed;
+    }
+
+    .quick-field {
+      width: 100%;
+      height: 44px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 0 12px;
+      background: #fbfcfa;
+      color: var(--ink);
+      text-align: center;
+      font-weight: 700;
+    }
+
+    aside {
+      display: grid;
+      gap: 14px;
+    }
+
+    .panel {
+      padding: 16px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      border-radius: 8px;
+      box-shadow: 0 10px 30px rgba(31, 38, 29, 0.07);
+    }
+
+    .panel h2 {
+      margin-bottom: 14px;
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .metric {
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfcfa;
+    }
+
+    .metric strong {
+      font-size: 24px;
+    }
+
+    .log-form {
+      display: grid;
+      gap: 10px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 92px;
+      gap: 8px;
+    }
+
+    select,
+    input,
+    textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfcfa;
+      color: var(--ink);
+      padding: 11px 12px;
+      outline: none;
+    }
+
+    textarea {
+      min-height: 86px;
+      resize: vertical;
+      line-height: 1.6;
+    }
+
+    select:focus,
+    input:focus,
+    textarea:focus {
+      border-color: var(--green);
+      box-shadow: 0 0 0 3px rgba(47, 125, 80, 0.14);
+    }
+
+    .primary {
+      min-height: 48px;
+      border-radius: 8px;
+      background: var(--ink);
+      color: white;
+      font-weight: 700;
+    }
+
+    .log-list {
+      display: grid;
+      gap: 8px;
+      max-height: 330px;
+      overflow: auto;
+      padding-right: 2px;
+    }
+
+    .log-item {
+      display: grid;
+      grid-template-columns: 34px minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: start;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfcfa;
+    }
+
+    .log-icon {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      background: var(--green-soft);
+      color: var(--green);
+    }
+
+    .log-icon svg {
+      width: 18px;
+      height: 18px;
+      stroke: currentColor;
+      stroke-width: 2;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .log-main {
+      min-width: 0;
+    }
+
+    .log-main strong {
+      display: block;
+      line-height: 1.35;
+      overflow-wrap: anywhere;
+    }
+
+    .log-main span {
+      display: block;
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .log-main a {
+      display: inline-block;
+      margin-top: 6px;
+      color: var(--blue);
+      font-size: 12px;
+      font-weight: 800;
+      text-decoration: none;
+    }
+
+    .small-action {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--muted);
+    }
+
+    .small-action:hover {
+      background: #eef2eb;
+      color: var(--red);
+    }
+
+    .history {
+      display: grid;
+      gap: 10px;
+    }
+
+    .history-row {
+      display: grid;
+      grid-template-columns: 86px minmax(0, 1fr) 42px;
+      gap: 8px;
+      align-items: center;
+      font-size: 13px;
+    }
+
+    .history-date {
+      color: var(--muted);
+    }
+
+    .history-bar {
+      height: 9px;
+      border-radius: 999px;
+      background: #edf1ea;
+      overflow: hidden;
+    }
+
+    .history-bar i {
+      display: block;
+      width: min(100%, calc(var(--value) * 1%));
+      height: 100%;
+      background: var(--blue);
+      border-radius: inherit;
+    }
+
+    .tools {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tool-button {
+      min-height: 40px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 12px;
+      border-radius: 8px;
+      background: #eef2eb;
+      color: var(--ink);
+      font-weight: 700;
+      font-size: 13px;
+    }
+
+    .tool-button svg {
+      width: 17px;
+      height: 17px;
+      stroke: currentColor;
+      stroke-width: 2;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .empty {
+      padding: 14px;
+      border: 1px dashed var(--line);
+      border-radius: 8px;
+      color: var(--muted);
+      line-height: 1.6;
+      background: #fbfcfa;
+    }
+
+    .done {
+      color: var(--green);
+    }
+
+    .nearly {
+      color: #8b6b12;
+    }
+
+    .file-input {
+      display: none;
+    }
+
+    @media (max-width: 900px) {
+      header,
+      .layout,
+      .overview {
+        grid-template-columns: 1fr;
+      }
+
+      .week-picker {
+        width: 100%;
+        justify-content: space-between;
+      }
+
+      .ring {
+        width: min(100%, 230px);
+        justify-self: center;
+      }
+    }
+
+    @media (max-width: 620px) {
+      .app {
+        padding: 14px 10px calc(24px + env(safe-area-inset-bottom));
+      }
+
+      .tasks,
+      .metrics,
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+
+      header {
+        gap: 12px;
+        margin-bottom: 12px;
+      }
+
+      .subtitle {
+        font-size: 13px;
+      }
+
+      .overview {
+        grid-template-columns: minmax(0, 1fr) 128px;
+        padding: 14px;
+        gap: 10px;
+      }
+
+      .score strong {
+        font-size: 42px;
+      }
+
+      .score span {
+        font-size: 13px;
+      }
+
+      .ring {
+        min-width: 0;
+        width: 118px;
+      }
+
+      .ring::after {
+        inset: 10px;
+      }
+
+      .ring span {
+        font-size: 22px;
+      }
+
+      .reward-top,
+      .reward-item,
+      .avatar-panel {
+        grid-template-columns: 1fr;
+      }
+
+      .avatar-frame {
+        width: 112px;
+      }
+
+      .book-fields,
+      .book-stats,
+      .anime-fields {
+        grid-template-columns: 1fr;
+      }
+
+      .book-days {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .reward-token {
+        justify-self: start;
+      }
+
+      .claim {
+        width: 100%;
+      }
+
+      .task-card {
+        min-height: 220px;
+        padding: 14px;
+      }
+
+      .week-label {
+        min-width: 142px;
+        font-size: 12px;
+      }
+
+      .icon-button {
+        width: 42px;
+        height: 42px;
+      }
+
+      .step,
+      .quick-field {
+        height: 50px;
+      }
+
+      select,
+      input,
+      textarea {
+        font-size: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header>
+      <div>
+        <h1>週ノルマ記録</h1>
+        <p class="subtitle">本 1冊、アニメ 5話、映画 2本、運動 4日。今週の達成度と積み上げを残すための小さなダッシュボード。</p>
+      </div>
+      <div class="week-picker" aria-label="週の切り替え">
+        <button class="icon-button" id="prevWeek" title="前の週" aria-label="前の週">
+          <svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>
+        </button>
+        <div class="week-label" id="weekLabel"></div>
+        <button class="icon-button" id="nextWeek" title="次の週" aria-label="次の週">
+          <svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
+        </button>
+        <button class="icon-button" id="thisWeek" title="今週" aria-label="今週">
+          <svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 3v6h6"/><path d="M12 7v5l3 2"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <section class="layout">
+      <div>
+        <section class="overview" aria-label="今週の概要">
+          <div class="score">
+            <strong id="headlineScore">0/4</strong>
+            <span id="headlineText"></span>
+          </div>
+          <div class="ring" id="overallRing" style="--p: 0">
+            <span id="overallPercent">0%</span>
+          </div>
+        </section>
+
+        <section class="reward-board" aria-label="今週のリワード">
+          <div class="avatar-panel">
+            <div class="avatar-frame" id="avatarFrame"></div>
+            <div class="avatar-copy">
+              <strong id="avatarTitle"></strong>
+              <span id="avatarText"></span>
+              <div class="avatar-meter"><i id="avatarMeter" style="--value: 0"></i></div>
+            </div>
+          </div>
+          <div class="reward-top">
+            <div>
+              <h2>リワード</h2>
+              <p id="rewardLead"></p>
+            </div>
+            <div class="reward-token" id="rewardToken">0枚</div>
+          </div>
+          <div class="reward-list" id="rewardList"></div>
+        </section>
+
+        <section class="book-planner" aria-label="読書プラン">
+          <div>
+            <h2>読書プラン</h2>
+            <p>タイトルとページ数を入れると、1日あたりの目安が出ます。</p>
+          </div>
+          <div class="book-fields">
+            <input id="bookTitle" type="text" placeholder="読む本のタイトル">
+            <input id="bookPages" type="number" min="1" step="1" placeholder="総ページ">
+            <button class="secondary" id="searchBooks" type="button">検索</button>
+          </div>
+          <div class="search-results" id="bookResults"></div>
+          <div class="book-stats">
+            <div class="book-stat">
+              <strong id="dailyTarget">0p</strong>
+              <p>1日あたり</p>
+            </div>
+            <div class="book-stat">
+              <strong id="pagesRead">0p</strong>
+              <p>読んだページ</p>
+            </div>
+            <div class="book-stat">
+              <strong id="pagesLeft">0p</strong>
+              <p>残り</p>
+            </div>
+          </div>
+          <div class="book-days" id="bookDays"></div>
+        </section>
+
+        <section class="anime-planner" aria-label="アニメ記録">
+          <div>
+            <h2>アニメ記録</h2>
+            <p>タイトルを入れて、観た話数を追加します。</p>
+          </div>
+          <div class="anime-fields">
+            <input id="animeTitle" type="text" placeholder="観るアニメのタイトル">
+            <input id="animeEpisode" type="number" min="1" step="1" placeholder="話数">
+            <button class="secondary" id="searchAnime" type="button">検索</button>
+            <button class="primary" id="addEpisode" type="button">追加</button>
+          </div>
+          <div class="search-results" id="animeResults"></div>
+          <div class="episode-list" id="episodeList"></div>
+        </section>
+
+        <section class="tasks" id="taskGrid" aria-label="ノルマ一覧"></section>
+      </div>
+
+      <aside>
+        <section class="panel">
+          <h2>週メモ</h2>
+          <textarea id="weekNote" placeholder="今週の気づき、読みたい本、観たい作品、体調など"></textarea>
+        </section>
+
+        <section class="panel">
+          <h2>記録を追加</h2>
+          <form class="log-form" id="logForm">
+            <div class="form-row">
+              <select id="logType" aria-label="種別"></select>
+              <input id="logAmount" type="number" min="1" step="1" value="1" aria-label="数">
+            </div>
+            <input id="logTitle" type="text" placeholder="タイトル・内容">
+            <textarea id="logMemo" placeholder="メモ"></textarea>
+            <button class="primary" type="submit">追加</button>
+          </form>
+        </section>
+
+        <section class="panel">
+          <h2>今週のログ</h2>
+          <div class="log-list" id="logList"></div>
+        </section>
+
+        <section class="panel">
+          <h2>継続</h2>
+          <div class="metrics">
+            <div class="metric">
+              <strong id="streakWeeks">0</strong>
+              <p>連続達成週</p>
+            </div>
+            <div class="metric">
+              <strong id="totalWeeks">0</strong>
+              <p>達成した週</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2>履歴</h2>
+          <div class="history" id="history"></div>
+        </section>
+
+        <section class="panel">
+          <h2>データ</h2>
+          <div class="tools">
+            <button class="tool-button" id="exportData" type="button">
+              <svg viewBox="0 0 24 24"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+              書き出し
+            </button>
+            <button class="tool-button" id="importData" type="button">
+              <svg viewBox="0 0 24 24"><path d="M12 21V9"/><path d="m7 14 5-5 5 5"/><path d="M5 3h14"/></svg>
+              読み込み
+            </button>
+            <button class="tool-button" id="resetWeek" type="button">
+              <svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 3v6h6"/></svg>
+              今週を空にする
+            </button>
+            <input class="file-input" id="fileInput" type="file" accept="application/json">
+          </div>
+        </section>
+      </aside>
+    </section>
+  </main>
+
+  <script>
+    const STORAGE_KEY = "weeklyQuotaTracker.v1";
+    const DAY_MS = 24 * 60 * 60 * 1000;
+
+    const goals = [
+      {
+        id: "book",
+        label: "本",
+        unit: "冊",
+        goal: 1,
+        placeholder: "読んだ本",
+        icon: '<svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5z"/></svg>'
+      },
+      {
+        id: "anime",
+        label: "アニメ",
+        unit: "話",
+        goal: 5,
+        placeholder: "作品名・話数",
+        icon: '<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m8 21 4-4 4 4"/><path d="m9 9 6 3-6 3z"/></svg>'
+      },
+      {
+        id: "movie",
+        label: "映画",
+        unit: "本",
+        goal: 2,
+        placeholder: "観た映画",
+        icon: '<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 5v14"/><path d="M17 5v14"/><path d="M3 9h4"/><path d="M17 9h4"/><path d="M3 15h4"/><path d="M17 15h4"/></svg>'
+      },
+      {
+        id: "exercise",
+        label: "運動",
+        unit: "日",
+        goal: 4,
+        placeholder: "運動内容",
+        icon: '<svg viewBox="0 0 24 24"><path d="M6.5 6.5h11"/><path d="M6.5 17.5h11"/><path d="M4 9v6"/><path d="M20 9v6"/><path d="M9 12h6"/></svg>'
+      }
+    ];
+
+    const rewardRules = [
+      {
+        id: "p25",
+        kind: "percent",
+        threshold: 25,
+        mark: "25",
+        title: "予告編チケット",
+        detail: "気になる本・映画・アニメを15分だけ下見できる。選ぶ時間そのものをご褒美にする。"
+      },
+      {
+        id: "p50",
+        kind: "percent",
+        threshold: 50,
+        mark: "50",
+        title: "寄り道30",
+        detail: "30分の寄り道を解禁。カフェ、散歩、ゲーム、書店など、その日の気分で選ぶ。"
+      },
+      {
+        id: "p75",
+        kind: "percent",
+        threshold: 75,
+        mark: "75",
+        title: "キュレーター権",
+        detail: "来週のテーマを1つ決められる。例: SF週、泣ける映画週、短編だけ読む週。"
+      },
+      {
+        id: "p100",
+        kind: "percent",
+        threshold: 100,
+        mark: "100",
+        title: "完全達成の祝日",
+        detail: "罪悪感なしの半日オフ。好きな作品を観る、外食する、何もしない、どれでも正解。"
+      },
+      {
+        id: "book-master",
+        kind: "goal",
+        goalId: "book",
+        mark: "本",
+        title: "本屋の遠征権",
+        detail: "本を1冊買ってよい。ただし条件は『今週の本から連想した1冊』。"
+      },
+      {
+        id: "anime-master",
+        kind: "goal",
+        goalId: "anime",
+        mark: "話",
+        title: "1話だけ先行上映",
+        detail: "次に観るアニメを1話だけ先取りできる。続きは来週のノルマに回す。"
+      },
+      {
+        id: "movie-master",
+        kind: "goal",
+        goalId: "movie",
+        mark: "映",
+        title: "自宅シアター化",
+        detail: "照明、飲み物、音量を整えて1本を特別上映にする。作品体験を格上げする報酬。"
+      },
+      {
+        id: "exercise-master",
+        kind: "goal",
+        goalId: "exercise",
+        mark: "動",
+        title: "回復課金",
+        detail: "温浴、ストレッチ道具、良いプロテインなど、身体が喜ぶ回復に小さく投資できる。"
+      }
+    ];
+
+    let state = loadState();
+    let selectedWeek = startOfWeek(new Date());
+
+    const taskGrid = document.querySelector("#taskGrid");
+    const logType = document.querySelector("#logType");
+    const logAmount = document.querySelector("#logAmount");
+    const logTitle = document.querySelector("#logTitle");
+    const logMemo = document.querySelector("#logMemo");
+    const weekNote = document.querySelector("#weekNote");
+    const fileInput = document.querySelector("#fileInput");
+    const bookTitle = document.querySelector("#bookTitle");
+    const bookPages = document.querySelector("#bookPages");
+    const bookDays = document.querySelector("#bookDays");
+    const animeTitle = document.querySelector("#animeTitle");
+    const animeEpisode = document.querySelector("#animeEpisode");
+    const episodeList = document.querySelector("#episodeList");
+    const bookResults = document.querySelector("#bookResults");
+    const animeResults = document.querySelector("#animeResults");
+    let bookSearchResults = [];
+    let animeSearchResults = [];
+
+    function loadState() {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY));
+        if (parsed && parsed.weeks) return parsed;
+      } catch (error) {
+        console.warn(error);
+      }
+      return { weeks: {} };
+    }
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function startOfWeek(date) {
+      const base = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+      const day = base.getDay();
+      const diff = day === 0 ? -6 : 1 - day;
+      base.setDate(base.getDate() + diff);
+      base.setHours(0, 0, 0, 0);
+      return base;
+    }
+
+    function formatKey(date) {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, "0");
+      const d = String(date.getDate()).padStart(2, "0");
+      return `${y}-${m}-${d}`;
+    }
+
+    function formatDate(date) {
+      return new Intl.DateTimeFormat("ja-JP", { month: "numeric", day: "numeric" }).format(date);
+    }
+
+    function weekEnd(date) {
+      return new Date(date.getTime() + 6 * DAY_MS);
+    }
+
+    function currentWeek() {
+      const key = formatKey(selectedWeek);
+      if (!state.weeks[key]) {
+        state.weeks[key] = {
+          counts: Object.fromEntries(goals.map((goal) => [goal.id, 0])),
+          logs: [],
+          note: "",
+          bookPlan: defaultBookPlan(),
+          animePlan: defaultAnimePlan(),
+          claimedRewards: []
+        };
+      }
+      if (!state.weeks[key].claimedRewards) state.weeks[key].claimedRewards = [];
+      if (!state.weeks[key].bookPlan) state.weeks[key].bookPlan = defaultBookPlan();
+      if (!Array.isArray(state.weeks[key].bookPlan.dailyPages)) state.weeks[key].bookPlan.dailyPages = Array(7).fill(0);
+      if (!state.weeks[key].animePlan) state.weeks[key].animePlan = defaultAnimePlan();
+      if (!Array.isArray(state.weeks[key].animePlan.episodes)) state.weeks[key].animePlan.episodes = [];
+      return state.weeks[key];
+    }
+
+    function defaultBookPlan() {
+      return { title: "", totalPages: 0, dailyPages: Array(7).fill(0) };
+    }
+
+    function defaultAnimePlan() {
+      return { title: "", episodes: [] };
+    }
+
+    function clampCount(value) {
+      const number = Number(value);
+      if (!Number.isFinite(number)) return 0;
+      return Math.max(0, Math.floor(number));
+    }
+
+    function weekCompletion(week) {
+      const total = goals.reduce((sum, goal) => {
+        return sum + goalProgress(goal, week);
+      }, 0);
+      return Math.round((total / goals.length) * 100);
+    }
+
+    function completedGoals(week) {
+      return goals.filter((goal) => goalCompleted(goal, week)).length;
+    }
+
+    function getBookStats(week) {
+      const plan = week.bookPlan || defaultBookPlan();
+      const total = clampCount(plan.totalPages);
+      const read = (plan.dailyPages || []).reduce((sum, value) => sum + clampCount(value), 0);
+      return {
+        total,
+        read,
+        left: Math.max(0, total - read),
+        daily: total ? Math.ceil(total / 7) : 0,
+        percent: total ? Math.min(1, read / total) : Math.min(1, clampCount(week.counts.book) / 1)
+      };
+    }
+
+    function goalProgress(goal, week) {
+      if (goal.id === "book") return getBookStats(week).percent;
+      if (goal.id === "anime") return Math.min(1, getAnimeCount(week) / goal.goal);
+      return Math.min(1, (week.counts[goal.id] || 0) / goal.goal);
+    }
+
+    function goalCompleted(goal, week) {
+      if (goal.id === "book") {
+        const stats = getBookStats(week);
+        return stats.total ? stats.read >= stats.total : clampCount(week.counts.book) >= 1;
+      }
+      if (goal.id === "anime") return getAnimeCount(week) >= goal.goal;
+      return (week.counts[goal.id] || 0) >= goal.goal;
+    }
+
+    function getAnimeCount(week) {
+      const plan = week.animePlan || defaultAnimePlan();
+      return plan.episodes.length || clampCount(week.counts.anime);
+    }
+
+    function render() {
+      const week = currentWeek();
+      const key = formatKey(selectedWeek);
+      const percent = weekCompletion(week);
+      const done = completedGoals(week);
+      const end = weekEnd(selectedWeek);
+
+      document.querySelector("#weekLabel").textContent = `${formatDate(selectedWeek)} - ${formatDate(end)}`;
+      document.querySelector("#headlineScore").textContent = `${done}/4`;
+      document.querySelector("#headlineText").textContent = buildHeadline(done, percent);
+      document.querySelector("#overallRing").style.setProperty("--p", percent);
+      document.querySelector("#overallPercent").textContent = `${percent}%`;
+
+      weekNote.value = week.note || "";
+      renderBookPlanner(week);
+      renderAnimePlanner(week);
+      renderTasks(week);
+      renderRewards(week, percent);
+      renderLogs(week);
+      renderHistory(key);
+      renderMetrics();
+      saveState();
+    }
+
+    function buildHeadline(done, percent) {
+      if (done === 4) return "今週のノルマは達成済み。あとは余白として積めます。";
+      if (percent >= 70) return "いいペースです。残りを小さく刻むだけで届きます。";
+      if (percent > 0) return "記録は始まっています。次の1つを足しましょう。";
+      return "今週はまだ白紙です。最初の1件を残しましょう。";
+    }
+
+    function renderTasks(week) {
+      taskGrid.innerHTML = goals.map((goal) => {
+        const isBook = goal.id === "book";
+        const isAnime = goal.id === "anime";
+        const stats = getBookStats(week);
+        const animeCount = getAnimeCount(week);
+        const value = isBook && stats.total ? stats.read : isAnime ? animeCount : week.counts[goal.id] || 0;
+        const target = isBook && stats.total ? stats.total : goal.goal;
+        const unit = isBook && stats.total ? "p" : goal.unit;
+        const percent = Math.round(goalProgress(goal, week) * 100);
+        const statusClass = goalCompleted(goal, week) ? "done" : value > 0 ? "nearly" : "";
+        const controls = isBook && stats.total
+          ? '<button class="primary" type="button" data-action="focus-book">ページ進捗を記録</button>'
+          : isAnime && (week.animePlan.title || week.animePlan.episodes.length)
+          ? '<button class="primary" type="button" data-action="focus-anime">話数を記録</button>'
+          : `
+            <button class="step" data-action="minus" data-id="${goal.id}" ${value <= 0 ? "disabled" : ""} aria-label="${goal.label}を減らす">-</button>
+            <input class="quick-field" data-action="set" data-id="${goal.id}" value="${value}" inputmode="numeric" aria-label="${goal.label}の数">
+            <button class="step add" data-action="plus" data-id="${goal.id}" aria-label="${goal.label}を増やす">+</button>
+          `;
+        return `
+          <article class="task-card">
+            <div class="task-head">
+              <div class="task-title">
+                <div class="badge">${goal.icon}</div>
+                <div>
+                  <h2>${goal.label}</h2>
+                  <p>${isBook && stats.total ? escapeHtml(week.bookPlan.title || "読書中") : isAnime && week.animePlan.title ? escapeHtml(week.animePlan.title) : goal.goal + goal.unit + " / 週"}</p>
+                </div>
+              </div>
+              <div class="count ${statusClass}">
+                <strong>${value}</strong>
+                <span>/ ${target}${unit}</span>
+              </div>
+            </div>
+            <div>
+              <div class="progress" aria-label="${goal.label}の進捗">
+                <div class="bar" style="--value: ${percent}"></div>
+              </div>
+            </div>
+            <div class="controls">
+              ${controls}
+            </div>
+          </article>
+        `;
+      }).join("");
+    }
+
+    function renderBookPlanner(week) {
+      const plan = week.bookPlan || defaultBookPlan();
+      const stats = getBookStats(week);
+      const labels = ["月", "火", "水", "木", "金", "土", "日"];
+      bookTitle.value = plan.title || "";
+      bookPages.value = plan.totalPages || "";
+      document.querySelector("#dailyTarget").textContent = `${stats.daily}p`;
+      document.querySelector("#pagesRead").textContent = `${stats.read}p`;
+      document.querySelector("#pagesLeft").textContent = `${stats.left}p`;
+      bookDays.innerHTML = labels.map((label, index) => `
+        <div class="day-cell">
+          <label for="bookDay${index}">${label}</label>
+          <input id="bookDay${index}" data-action="book-day" data-index="${index}" type="number" min="0" step="1" value="${clampCount(plan.dailyPages[index])}" inputmode="numeric" aria-label="${label}曜日の読書ページ">
+        </div>
+      `).join("");
+    }
+
+    function renderAnimePlanner(week) {
+      const plan = week.animePlan || defaultAnimePlan();
+      animeTitle.value = plan.title || "";
+      episodeList.innerHTML = plan.episodes.length
+        ? plan.episodes
+          .slice()
+          .sort((a, b) => a - b)
+          .map((episode) => `
+            <span class="episode-chip">
+              ${episode}話
+              <button type="button" data-action="delete-episode" data-episode="${episode}" aria-label="${episode}話を削除">×</button>
+            </span>
+          `).join("")
+        : '<div class="empty">まだ話数がありません。</div>';
+    }
+
+    function renderBookResults(items) {
+      bookSearchResults = items;
+      bookResults.innerHTML = items.length
+        ? items.map((item, index) => `
+          <button class="result-button" type="button" data-action="select-book" data-index="${index}">
+            <strong>${escapeHtml(item.title)}</strong>
+            <span>${escapeHtml([item.authors, item.pageCount ? item.pageCount + "p" : ""].filter(Boolean).join(" ・ "))}</span>
+          </button>
+        `).join("")
+        : '<div class="empty">候補が見つかりません。</div>';
+    }
+
+    function renderAnimeResults(items) {
+      animeSearchResults = items;
+      animeResults.innerHTML = items.length
+        ? items.map((item, index) => `
+          <button class="result-button" type="button" data-action="select-anime" data-index="${index}">
+            <strong>${escapeHtml(item.title)}</strong>
+            <span>${escapeHtml([item.year || "", item.episodes ? item.episodes + "話" : ""].filter(Boolean).join(" ・ "))}</span>
+          </button>
+        `).join("")
+        : '<div class="empty">候補が見つかりません。</div>';
+    }
+
+    async function searchBookCandidates() {
+      const query = bookTitle.value.trim();
+      if (!query) return;
+      bookResults.innerHTML = '<div class="empty">検索中...</div>';
+      try {
+        const url = `https://www.googleapis.com/books/v1/volumes?q=intitle:${encodeURIComponent(query)}&maxResults=6&printType=books&langRestrict=ja`;
+        const response = await fetch(url);
+        if (!response.ok) throw new Error("Book search failed");
+        const data = await response.json();
+        const items = (data.items || []).map((item) => {
+          const info = item.volumeInfo || {};
+          return {
+            title: info.title || "",
+            authors: (info.authors || []).join(", "),
+            pageCount: clampCount(info.pageCount)
+          };
+        }).filter((item) => item.title);
+        renderBookResults(items);
+      } catch (error) {
+        bookResults.innerHTML = '<div class="empty">検索できませんでした。</div>';
+      }
+    }
+
+    async function searchAnimeCandidates() {
+      const query = animeTitle.value.trim();
+      if (!query) return;
+      animeResults.innerHTML = '<div class="empty">検索中...</div>';
+      try {
+        const url = `https://api.jikan.moe/v4/anime?q=${encodeURIComponent(query)}&limit=6`;
+        const response = await fetch(url);
+        if (!response.ok) throw new Error("Anime search failed");
+        const data = await response.json();
+        const items = (data.data || []).map((item) => ({
+          title: item.title_japanese || item.title || "",
+          year: item.year || "",
+          episodes: clampCount(item.episodes)
+        })).filter((item) => item.title);
+        renderAnimeResults(items);
+      } catch (error) {
+        animeResults.innerHTML = '<div class="empty">検索できませんでした。</div>';
+      }
+    }
+
+    function rewardUnlocked(rule, week, percent) {
+      if (rule.kind === "percent") return percent >= rule.threshold;
+      const goal = goals.find((item) => item.id === rule.goalId);
+      return goal && clampCount(week.counts[goal.id]) >= goal.goal;
+    }
+
+    function renderRewards(week, percent) {
+      renderAvatar();
+      const claimed = new Set(week.claimedRewards || []);
+      const unlocked = rewardRules.filter((rule) => rewardUnlocked(rule, week, percent));
+      const tokenText = `${unlocked.length}/8`;
+      document.querySelector("#rewardToken").textContent = tokenText;
+
+      const next = rewardRules.find((rule) => !rewardUnlocked(rule, week, percent));
+      document.querySelector("#rewardLead").textContent = next
+        ? `次の解放: ${next.title}`
+        : "今週のリワードはすべて解放済み。受け取り忘れだけ確認。";
+
+      document.querySelector("#rewardList").innerHTML = rewardRules.map((rule) => {
+        const isUnlocked = rewardUnlocked(rule, week, percent);
+        const isClaimed = claimed.has(rule.id);
+        const buttonLabel = isClaimed ? "受取済" : isUnlocked ? "受け取る" : "未解放";
+        return `
+          <article class="reward-item ${isUnlocked ? "" : "locked"}">
+            <div class="reward-mark">${escapeHtml(rule.mark)}</div>
+            <div class="reward-copy">
+              <strong>${escapeHtml(rule.title)}</strong>
+              <span>${escapeHtml(rule.detail)}</span>
+            </div>
+            <button class="claim" data-action="claim-reward" data-id="${rule.id}" ${!isUnlocked || isClaimed ? "disabled" : ""}>${buttonLabel}</button>
+          </article>
+        `;
+      }).join("");
+    }
+
+    function avatarScore() {
+      return Object.values(state.weeks).reduce((sum, week) => sum + weekCompletion(week), 0);
+    }
+
+    function avatarLevel(score) {
+      if (score >= 1200) return 5;
+      if (score >= 700) return 4;
+      if (score >= 350) return 3;
+      if (score >= 120) return 2;
+      return 1;
+    }
+
+    function contentTheme() {
+      const text = Object.values(state.weeks).flatMap((week) => {
+        const plan = week.bookPlan || {};
+        const anime = week.animePlan || {};
+        return [
+          plan.title || "",
+          anime.title || "",
+          ...(week.logs || []).flatMap((log) => [log.title || "", log.memo || ""])
+        ];
+      }).join(" ").toLowerCase();
+
+      const themes = [
+        {
+          id: "cosmos",
+          name: "星図",
+          words: ["宇宙", "星", "銀河", "space", "star", "planet", "galaxy", "sf", "science fiction"],
+          primary: "#203f7a",
+          accent: "#8ed0ff",
+          glow: "#d9f3ff"
+        },
+        {
+          id: "mystery",
+          name: "推理",
+          words: ["ミステリ", " mystery", "探偵", "事件", "謎", "殺人", "crime", "detective"],
+          primary: "#30343f",
+          accent: "#f1c75b",
+          glow: "#f9e9a6"
+        },
+        {
+          id: "fantasy",
+          name: "幻想",
+          words: ["魔法", "fantasy", "ファンタジ", "王国", "竜", "dragon", "異世界", "妖精"],
+          primary: "#32533a",
+          accent: "#b7e08a",
+          glow: "#e1ffd0"
+        },
+        {
+          id: "romance",
+          name: "情緒",
+          words: ["恋", "愛", "romance", "love", "青春", "君", "花", "春"],
+          primary: "#7c3f58",
+          accent: "#ffb3c7",
+          glow: "#ffe2eb"
+        },
+        {
+          id: "action",
+          name: "熱量",
+          words: ["バトル", "戦", "action", "war", "fight", "冒険", "hero", "ヒーロー"],
+          primary: "#7a2e24",
+          accent: "#ff9f43",
+          glow: "#ffd7a2"
+        }
+      ];
+
+      const ranked = themes.map((theme) => ({
+        ...theme,
+        score: theme.words.reduce((sum, word) => sum + (text.includes(word) ? 1 : 0), 0)
+      })).sort((a, b) => b.score - a.score);
+
+      return ranked[0].score > 0
+        ? ranked[0]
+        : { id: "clear", name: "澄明", primary: "#1d3557", accent: "#8ed0ff", glow: "#d9f3ff" };
+    }
+
+    function renderAvatar() {
+      const score = avatarScore();
+      const level = avatarLevel(score);
+      const theme = contentTheme();
+      const next = [0, 120, 350, 700, 1200][level] || 1200;
+      const previous = [0, 0, 120, 350, 700][level - 1] || 0;
+      const meter = level === 5 ? 100 : Math.round(((score - previous) / (next - previous)) * 100);
+      const titles = {
+        1: "Lv.1 静かな観察者",
+        2: "Lv.2 余白を読む者",
+        3: "Lv.3 思考の設計者",
+        4: "Lv.4 夜明けの参謀",
+        5: "Lv.5 叡智のアーキテクト"
+      };
+      const texts = {
+        1: "まだ素顔のまま。記録が増えるほど、目元に集中力が宿ります。",
+        2: "読書と視聴の断片をつなぎ始めました。輪郭が少し鋭くなります。",
+        3: "ノルマが知識の回路になりました。視線と装備がはっきりしてきます。",
+        4: "継続が戦略になっています。背後に思考回路が現れます。",
+        5: "積み上げが人格の意匠になりました。堂々とした完成形です。"
+      };
+
+      document.querySelector("#avatarTitle").textContent = titles[level];
+      document.querySelector("#avatarText").textContent = `知性値 ${score}。テーマ: ${theme.name}。${texts[level]}`;
+      document.querySelector("#avatarMeter").style.setProperty("--value", meter);
+      document.querySelector("#avatarFrame").innerHTML = avatarSvg(level, theme);
+    }
+
+    function avatarSvg(level, theme) {
+      const glow = level >= 4 ? theme.glow : theme.accent;
+      const cloak = level >= 3 ? theme.primary : "#2f4f4f";
+      const accent = level >= 5 ? theme.glow : level >= 2 ? theme.accent : "#dcebdd";
+      const glasses = level >= 3
+        ? '<path d="M37 55h16M67 55h16M53 55c4 4 10 4 14 0"/><rect x="31" y="48" width="22" height="15" rx="5"/><rect x="67" y="48" width="22" height="15" rx="5"/>'
+        : "";
+      const circuit = level >= 4
+        ? `<path d="M21 27h18M81 27h18M30 86h-12M90 86h12" stroke="${glow}"/><circle cx="20" cy="27" r="3" fill="${glow}"/><circle cx="100" cy="27" r="3" fill="${glow}"/><circle cx="18" cy="86" r="3" fill="${glow}"/><circle cx="102" cy="86" r="3" fill="${glow}"/>`
+        : "";
+      const crest = level >= 5
+        ? `<path d="M60 12 70 30H50Z" fill="${accent}"/><path d="M45 31h30" stroke="${accent}"/>`
+        : "";
+      const aura = level >= 2
+        ? `<circle cx="60" cy="58" r="${level >= 5 ? 48 : 42}" fill="none" stroke="${glow}" opacity=".28"/>`
+        : "";
+      const motif = {
+        cosmos: `<path d="M21 75c16-10 33-13 58-8 12 2 21 1 29-4" stroke="${accent}" opacity=".6"/><circle cx="89" cy="31" r="2" fill="${glow}"/><circle cx="27" cy="39" r="1.5" fill="${glow}"/>`,
+        mystery: `<path d="M18 24h18M24 30h11M84 95l9 9" stroke="${accent}" opacity=".65"/><circle cx="78" cy="89" r="8" fill="none" stroke="${accent}" opacity=".65"/>`,
+        fantasy: `<path d="M22 86c14-18 23-24 38-31 16 8 25 17 38 31" stroke="${accent}" opacity=".52"/><path d="M60 22c5 8 5 16 0 24-5-8-5-16 0-24Z" fill="${accent}" opacity=".55"/>`,
+        romance: `<path d="M60 25c-8-11-24-4-17 9 4 7 17 15 17 15s13-8 17-15c7-13-9-20-17-9Z" fill="${accent}" opacity=".36"/>`,
+        action: `<path d="M19 101 42 78M97 101 74 78M24 18l15 18M96 18 81 36" stroke="${accent}" opacity=".62"/>`,
+        clear: `<path d="M24 88c16-8 35-8 56 0 8 3 14 3 18 0" stroke="${accent}" opacity=".42"/>`
+      }[theme.id] || "";
+
+      return `
+        <svg viewBox="0 0 120 120" role="img" aria-label="進捗で成長するアバター">
+          <rect width="120" height="120" fill="#111816"/>
+          ${motif}
+          ${aura}
+          ${circuit}
+          ${crest}
+          <path d="M27 106c5-22 19-34 33-34s28 12 33 34Z" fill="${cloak}"/>
+          <path d="M39 74c6 9 36 9 42 0v18c-10 8-32 8-42 0Z" fill="#c7b39a"/>
+          <path d="M36 50c0-18 10-31 24-31s24 13 24 31c0 20-10 32-24 32S36 70 36 50Z" fill="#e1c7a8"/>
+          <path d="M43 43c7-15 27-21 42-4-5-17-18-27-35-22-12 4-19 16-17 31 2-2 4-4 10-5Z" fill="#26302d"/>
+          <path d="M47 57h7M73 57h7" stroke="#111816"/>
+          ${glasses}
+          <path d="M51 70c6 4 12 4 18 0" stroke="#7c513f"/>
+          <path d="M34 103h52" stroke="${accent}"/>
+          <path d="M60 78v25" stroke="${accent}"/>
+          <path d="M45 97l15-14 15 14" stroke="${accent}"/>
+        </svg>
+      `;
+    }
+
+    function renderLogs(week) {
+      const list = document.querySelector("#logList");
+      if (!week.logs.length) {
+        list.innerHTML = '<div class="empty">まだログがありません。</div>';
+        return;
+      }
+
+      list.innerHTML = week.logs
+        .slice()
+        .sort((a, b) => b.createdAt - a.createdAt)
+        .map((log) => {
+          const goal = goals.find((item) => item.id === log.type) || goals[0];
+          const title = escapeHtml(log.title || goal.label);
+          const memo = escapeHtml(log.memo || "");
+          const filmarks = log.type === "movie" && log.title
+            ? `<a href="https://filmarks.com/search/movies?q=${encodeURIComponent(log.title)}" target="_blank" rel="noopener">Filmarksで開く</a>`
+            : "";
+          const date = new Intl.DateTimeFormat("ja-JP", {
+            month: "numeric",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit"
+          }).format(new Date(log.createdAt));
+          return `
+            <article class="log-item">
+              <div class="log-icon">${goal.icon}</div>
+              <div class="log-main">
+                <strong>${title}</strong>
+                <span>${goal.label} +${log.amount}${goal.unit} ・ ${date}${memo ? " ・ " + memo : ""}</span>
+                ${filmarks}
+              </div>
+              <button class="small-action" data-action="delete-log" data-id="${log.id}" title="削除" aria-label="ログを削除">
+                <svg viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v5"/><path d="M14 11v5"/></svg>
+              </button>
+            </article>
+          `;
+        }).join("");
+    }
+
+    function renderHistory(selectedKey) {
+      const history = document.querySelector("#history");
+      const keys = Object.keys(state.weeks).sort().reverse().slice(0, 8);
+      if (!keys.length) {
+        history.innerHTML = '<div class="empty">履歴はここに並びます。</div>';
+        return;
+      }
+
+      history.innerHTML = keys.map((key) => {
+        const week = state.weeks[key];
+        const percent = weekCompletion(week);
+        const date = new Date(`${key}T00:00:00`);
+        const suffix = key === selectedKey ? "表示中" : `${percent}%`;
+        return `
+          <div class="history-row">
+            <span class="history-date">${formatDate(date)}</span>
+            <span class="history-bar"><i style="--value: ${percent}"></i></span>
+            <strong>${suffix}</strong>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderMetrics() {
+      const keys = Object.keys(state.weeks).sort();
+      const fullWeeks = keys.filter((key) => completedGoals(state.weeks[key]) === goals.length);
+      document.querySelector("#totalWeeks").textContent = fullWeeks.length;
+
+      let streak = 0;
+      let cursor = startOfWeek(new Date());
+      while (state.weeks[formatKey(cursor)] && completedGoals(state.weeks[formatKey(cursor)]) === goals.length) {
+        streak += 1;
+        cursor = new Date(cursor.getTime() - 7 * DAY_MS);
+      }
+      document.querySelector("#streakWeeks").textContent = streak;
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function addLog(type, amount, title, memo) {
+      const week = currentWeek();
+      const goal = goals.find((item) => item.id === type);
+      if (!goal) return;
+      const safeAmount = Math.max(1, clampCount(amount));
+      week.counts[type] = clampCount(week.counts[type]) + safeAmount;
+      week.logs.push({
+        id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()),
+        type,
+        amount: safeAmount,
+        title: title.trim() || goal.placeholder,
+        memo: memo.trim(),
+        createdAt: Date.now()
+      });
+    }
+
+    taskGrid.addEventListener("click", (event) => {
+      const button = event.target.closest("button[data-action]");
+      if (!button) return;
+      if (button.dataset.action === "focus-book") {
+        bookTitle.scrollIntoView({ behavior: "smooth", block: "center" });
+        bookTitle.focus();
+        return;
+      }
+      if (button.dataset.action === "focus-anime") {
+        animeTitle.scrollIntoView({ behavior: "smooth", block: "center" });
+        animeEpisode.focus();
+        return;
+      }
+      const week = currentWeek();
+      const id = button.dataset.id;
+      if (button.dataset.action === "plus") {
+        week.counts[id] = clampCount(week.counts[id]) + 1;
+      }
+      if (button.dataset.action === "minus") {
+        week.counts[id] = Math.max(0, clampCount(week.counts[id]) - 1);
+      }
+      render();
+    });
+
+    bookTitle.addEventListener("input", () => {
+      currentWeek().bookPlan.title = bookTitle.value;
+      saveState();
+    });
+
+    document.querySelector("#searchBooks").addEventListener("click", searchBookCandidates);
+
+    bookTitle.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        searchBookCandidates();
+      }
+    });
+
+    bookResults.addEventListener("click", (event) => {
+      const button = event.target.closest("button[data-action='select-book']");
+      if (!button) return;
+      const item = bookSearchResults[Number(button.dataset.index)];
+      if (!item) return;
+      const plan = currentWeek().bookPlan;
+      plan.title = item.title;
+      if (item.pageCount) plan.totalPages = item.pageCount;
+      bookResults.innerHTML = "";
+      render();
+    });
+
+    bookPages.addEventListener("input", () => {
+      currentWeek().bookPlan.totalPages = clampCount(bookPages.value);
+      render();
+    });
+
+    bookDays.addEventListener("change", (event) => {
+      const input = event.target.closest("input[data-action='book-day']");
+      if (!input) return;
+      const index = Number(input.dataset.index);
+      if (!Number.isInteger(index)) return;
+      currentWeek().bookPlan.dailyPages[index] = clampCount(input.value);
+      render();
+    });
+
+    animeTitle.addEventListener("input", () => {
+      currentWeek().animePlan.title = animeTitle.value;
+      saveState();
+    });
+
+    document.querySelector("#searchAnime").addEventListener("click", searchAnimeCandidates);
+
+    animeTitle.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        searchAnimeCandidates();
+      }
+    });
+
+    animeResults.addEventListener("click", (event) => {
+      const button = event.target.closest("button[data-action='select-anime']");
+      if (!button) return;
+      const item = animeSearchResults[Number(button.dataset.index)];
+      if (!item) return;
+      currentWeek().animePlan.title = item.title;
+      animeResults.innerHTML = "";
+      render();
+    });
+
+    document.querySelector("#addEpisode").addEventListener("click", () => {
+      const episode = clampCount(animeEpisode.value);
+      if (episode <= 0) return;
+      const plan = currentWeek().animePlan;
+      if (!plan.episodes.includes(episode)) plan.episodes.push(episode);
+      animeEpisode.value = "";
+      render();
+    });
+
+    animeEpisode.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        document.querySelector("#addEpisode").click();
+      }
+    });
+
+    episodeList.addEventListener("click", (event) => {
+      const button = event.target.closest("button[data-action='delete-episode']");
+      if (!button) return;
+      const episode = Number(button.dataset.episode);
+      currentWeek().animePlan.episodes = currentWeek().animePlan.episodes.filter((item) => item !== episode);
+      render();
+    });
+
+    taskGrid.addEventListener("change", (event) => {
+      const input = event.target.closest("input[data-action='set']");
+      if (!input) return;
+      currentWeek().counts[input.dataset.id] = clampCount(input.value);
+      render();
+    });
+
+    document.querySelector("#logList").addEventListener("click", (event) => {
+      const button = event.target.closest("button[data-action='delete-log']");
+      if (!button) return;
+      const week = currentWeek();
+      const log = week.logs.find((item) => item.id === button.dataset.id);
+      if (log) {
+        week.counts[log.type] = Math.max(0, clampCount(week.counts[log.type]) - clampCount(log.amount));
+      }
+      week.logs = week.logs.filter((item) => item.id !== button.dataset.id);
+      render();
+    });
+
+    document.querySelector("#rewardList").addEventListener("click", (event) => {
+      const button = event.target.closest("button[data-action='claim-reward']");
+      if (!button) return;
+      const week = currentWeek();
+      if (!week.claimedRewards.includes(button.dataset.id)) {
+        week.claimedRewards.push(button.dataset.id);
+      }
+      render();
+    });
+
+    document.querySelector("#logForm").addEventListener("submit", (event) => {
+      event.preventDefault();
+      addLog(logType.value, logAmount.value, logTitle.value, logMemo.value);
+      logAmount.value = "1";
+      logTitle.value = "";
+      logMemo.value = "";
+      render();
+    });
+
+    weekNote.addEventListener("input", () => {
+      currentWeek().note = weekNote.value;
+      saveState();
+    });
+
+    document.querySelector("#prevWeek").addEventListener("click", () => {
+      selectedWeek = new Date(selectedWeek.getTime() - 7 * DAY_MS);
+      render();
+    });
+
+    document.querySelector("#nextWeek").addEventListener("click", () => {
+      selectedWeek = new Date(selectedWeek.getTime() + 7 * DAY_MS);
+      render();
+    });
+
+    document.querySelector("#thisWeek").addEventListener("click", () => {
+      selectedWeek = startOfWeek(new Date());
+      render();
+    });
+
+    document.querySelector("#resetWeek").addEventListener("click", () => {
+      if (!confirm("表示中の週の記録を空にしますか？")) return;
+      state.weeks[formatKey(selectedWeek)] = {
+        counts: Object.fromEntries(goals.map((goal) => [goal.id, 0])),
+        logs: [],
+        note: "",
+        bookPlan: defaultBookPlan(),
+        animePlan: defaultAnimePlan(),
+        claimedRewards: []
+      };
+      render();
+    });
+
+    document.querySelector("#exportData").addEventListener("click", () => {
+      const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `weekly-quota-${formatKey(new Date())}.json`;
+      link.click();
+      URL.revokeObjectURL(url);
+    });
+
+    document.querySelector("#importData").addEventListener("click", () => fileInput.click());
+
+    fileInput.addEventListener("change", async () => {
+      const file = fileInput.files[0];
+      if (!file) return;
+      try {
+        const data = JSON.parse(await file.text());
+        if (!data || !data.weeks) throw new Error("Invalid data");
+        state = data;
+        render();
+      } catch (error) {
+        alert("読み込めないファイルです。");
+      } finally {
+        fileInput.value = "";
+      }
+    });
+
+    goals.forEach((goal) => {
+      const option = document.createElement("option");
+      option.value = goal.id;
+      option.textContent = goal.label;
+      logType.append(option);
+    });
+
+    logType.addEventListener("change", () => {
+      const goal = goals.find((item) => item.id === logType.value);
+      logTitle.placeholder = goal ? goal.placeholder : "タイトル・内容";
+    });
+    logType.dispatchEvent(new Event("change"));
+
+    if ("serviceWorker" in navigator && location.protocol !== "file:") {
+      navigator.serviceWorker.register("./sw.js").catch(() => {});
+    }
+
+    render();
+  </script>
+</body>
+</html>
